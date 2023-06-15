@@ -2,40 +2,25 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-const debug = true
-
-func console(a ...any) {
-	if !debug {
-		return
-	}
-	fmt.Fprintln(os.Stderr, a...)
-}
-
-func exec(a ...any) {
-	fmt.Println(a...)
-}
-
-func main() {
-	scanner := NewScanner(os.Stdin)
-
-	_ = ReadGame(scanner)
-	lander := &Lander{}
-
+func TestPID_Control(t *testing.T) {
+	lander := debugLander()
 	pid := &PID{
-		Kp: 1.85,
-		Ki: 0.04,
-		Kd: 16.00,
+		Kp: 1.850,
+		Ki: 0.038,
+		Kd: 17.718,
 	}
 
-	isControl := false
+	const it = 100
 	expSpeed := -MaxVSpeed + (MaxPower-G)*4
 
-	for {
-		turnData := ReadTurn(scanner)
-		UpdateLander(turnData[0], lander)
+	isControl := false
+	for i := 0; i < it; i++ {
+		lander.VSpeed += -G + float64(lander.Power)
 
 		if !isControl && lander.VSpeed < expSpeed {
 			isControl = true
@@ -55,6 +40,8 @@ func main() {
 			}
 		}
 
-		exec(0, lander.Power)
+		fmt.Printf("vspeed: %f, power: %d\n", lander.VSpeed, lander.Power)
 	}
+
+	assert.Greater(t, lander.VSpeed, -float64(MaxVSpeed))
 }

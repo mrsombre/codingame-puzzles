@@ -7,6 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+/**
+2500 2500 0 0 500 0 0
+*/
+
+var debugInputTurn = `H4sIAAAAAAAA/4pWMjI1MFAAEyAIpZViAQEAAP//bKzxWhkAAAA=`
+
 func debugLander() *Lander {
 	data := DataImport(strings.TrimSpace(debugInputTurn))
 	lander := &Lander{}

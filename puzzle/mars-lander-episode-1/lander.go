@@ -7,11 +7,8 @@ import (
 const (
 	G = 3.711
 
-	MaxHSpeed = 20
 	MaxVSpeed = 40
-
-	TurnRotate = 15
-	TurnPower  = 1
+	TurnPower = 1
 
 	MaxPower = 4
 )
