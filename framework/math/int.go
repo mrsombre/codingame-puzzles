@@ -1,20 +1,20 @@
-package main
+package math
 
-func abs(x int) int {
+func Abs(x int) int {
 	if x < 0 {
 		return -x
 	}
 	return x
 }
 
-func min(a int, b int) int {
+func Min(a int, b int) int {
 	if a < b {
 		return a
 	}
 	return b
 }
 
-func max(a int, b int) int {
+func Max(a int, b int) int {
 	if a > b {
 		return a
 	}
