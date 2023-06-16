@@ -20,38 +20,25 @@ func exec(a ...any) {
 
 func main() {
 	scanner := NewScanner(os.Stdin)
-
 	_ = ReadGame(scanner)
+
 	lander := &Lander{}
+	pid := &PID{Kp: 4.0, Ki: 3.0, Kd: 3.0, IntegralMax: 10.0, IntegralMin: -10.0}
 
-	pid := &PID{
-		Kp: 1.85,
-		Ki: 0.04,
-		Kd: 16.00,
-	}
-
-	isControl := false
-	expSpeed := -MaxVSpeed + (MaxPower-G)*4
+	expSpeed := -MaxVSpeed + 1
 
 	for {
 		turnData := ReadTurn(scanner)
 		UpdateLander(turnData[0], lander)
 
-		if !isControl && lander.VSpeed < expSpeed {
-			isControl = true
-		}
-		if !isControl {
-			continue
-		}
-
 		control := pid.Control(expSpeed, lander.VSpeed)
 		if control <= 0 {
 			if lander.Power > 0 {
-				lander.Power = lander.Power - 1
+				lander.Power = lander.Power - TurnPower
 			}
 		} else {
 			if lander.Power < MaxPower {
-				lander.Power = lander.Power + 1
+				lander.Power = lander.Power + TurnPower
 			}
 		}
 

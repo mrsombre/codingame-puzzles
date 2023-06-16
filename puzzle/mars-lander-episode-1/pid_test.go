@@ -8,40 +8,37 @@ import (
 )
 
 func TestPID_Control(t *testing.T) {
-	lander := debugLander()
+	lander := &Lander{}
 	pid := &PID{
-		Kp: 1.850,
-		Ki: 0.038,
-		Kd: 17.718,
+		Kp:          3.0,
+		Ki:          2.0,
+		Kd:          10.0,
+		IntegralMax: 1.0,
+		IntegralMin: -1.0,
 	}
 
 	const it = 100
-	expSpeed := -MaxVSpeed + (MaxPower-G)*4
+	expSpeed := -MaxVSpeed + 1
 
-	isControl := false
 	for i := 0; i < it; i++ {
 		lander.VSpeed += -G + float64(lander.Power)
-
-		if !isControl && lander.VSpeed < expSpeed {
-			isControl = true
-		}
-		if !isControl {
+		if lander.VSpeed > expSpeed+10 {
 			continue
 		}
 
 		control := pid.Control(expSpeed, lander.VSpeed)
 		if control <= 0 {
 			if lander.Power > 0 {
-				lander.Power = lander.Power - 1
+				lander.Power = lander.Power - TurnPower
 			}
 		} else {
 			if lander.Power < MaxPower {
-				lander.Power = lander.Power + 1
+				lander.Power = lander.Power + TurnPower
 			}
 		}
 
-		fmt.Printf("vspeed: %f, power: %d\n", lander.VSpeed, lander.Power)
+		fmt.Printf("control: %.2f | vspeed: %f | power: %d\n", control, lander.VSpeed, lander.Power)
 	}
 
-	assert.Greater(t, lander.VSpeed, -float64(MaxVSpeed))
+	assert.Greater(t, lander.VSpeed, -MaxVSpeed)
 }

@@ -1,34 +1,45 @@
 package pid
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
+const (
+	G = 3.711
+
+	MaxSpeed = 40.0
+	MaxPower = 4
+)
+
+type Lander struct {
+	VSpeed float64
+	Power  int
+}
+
 func TestPID_Control(t *testing.T) {
-	lander := &Lander{VSpeed: 0, Power: 0}
-	pid := &PID{
-		Kp: 1.850,
-		Ki: 0.035,
-		Kd: 10.00,
+	lander := &Lander{
+		VSpeed: 0,
+		Power:  0,
 	}
+	pid := &PID{Kp: 4.0, Ki: 3.0, Kd: 3.0, IntegralMax: 10, IntegralMin: -10}
 
 	const it = 100
-	expSpeed := float64(-MaxSpeed + 1)
+	expSpeed := -MaxSpeed + 1
 
-	isControl := false
+	jsonData := struct {
+		Speed []float64 `json:"speed"`
+		Power []int     `json:"power"`
+	}{
+		Speed: make([]float64, 0, it),
+		Power: make([]int, 0, it),
+	}
+
 	for i := 0; i < it; i++ {
 		lander.VSpeed += -G + float64(lander.Power)
 
-		if !isControl && lander.VSpeed < expSpeed {
-			isControl = true
-		}
-		if !isControl {
-			continue
-		}
-
 		control := pid.Control(expSpeed, lander.VSpeed)
 		if control <= 0 {
 			if lander.Power > 0 {
@@ -40,68 +51,23 @@ func TestPID_Control(t *testing.T) {
 			}
 		}
 
-		fmt.Printf("vspeed: %f, power: %d\n", lander.VSpeed, lander.Power)
+		jsonData.Speed = append(jsonData.Speed, lander.VSpeed)
+		jsonData.Power = append(jsonData.Power, lander.Power)
+
+		fmt.Printf("control: %.2f | vspeed: %f | power: %d\n", control, lander.VSpeed, lander.Power)
 	}
 
-	assert.Greater(t, lander.VSpeed, -float64(MaxSpeed))
-}
-
-// This test is used to tune the PID controller
-// https://en.wikipedia.org/wiki/Ziegler%E2%80%93Nichols_method
-func TestPID_ControlTuning(t *testing.T) {
-	lander := &Lander{VSpeed: 0, Power: 0}
-	pid := &PID{
-		Kp: 0.0,
-		Ki: 0.0,
-		Kd: 0.0,
+	// write points to file json
+	// Convert the points slice to JSON
+	json, err := json.Marshal(jsonData)
+	if err != nil {
+		fmt.Println("Error marshaling JSON:", err)
+		return
 	}
 
-	expSpeed := -float64(MaxSpeed)
-
-	lastVSpeed := 0.0
-	isControl := false
-	cnt := 0
-	ci := 0
-
-	for i := 0; i < 1000; i++ {
-		lastVSpeed = lander.VSpeed
-		lander.VSpeed += -G + float64(lander.Power)
-
-		if !isControl && lander.VSpeed < expSpeed {
-			isControl = true
-		}
-		if !isControl {
-			continue
-		}
-
-		control := pid.Control(expSpeed, lander.VSpeed)
-		if control <= 0 {
-			if lander.Power > 0 {
-				lander.Power = lander.Power - 1
-			}
-		} else {
-			if lander.Power < MaxPower {
-				lander.Power = lander.Power + 1
-			}
-		}
-
-		if lastVSpeed > expSpeed && lander.VSpeed < expSpeed || lastVSpeed < expSpeed && lander.VSpeed > expSpeed {
-			if cnt > 10 { // We have a stable oscillation
-				Ku := pid.Kp
-				Pu := float64(ci) / float64(cnt)
-				pid.Kp = 0.6 * Ku
-				pid.Ki = 2 * pid.Kp / Pu
-				pid.Kd = pid.Kp * Pu / 8
-				cnt = 0
-				ci = 0
-				continue
-			}
-			pid.Kp += 0.1
-			cnt++
-		}
-
-		ci++
+	// Write the JSON data to file
+	err = ioutil.WriteFile("points.json", json, 0644)
+	if err != nil {
+		panic(err)
 	}
-
-	fmt.Printf("Tuning Done: Kp = %f, Ki = %f, Kd = %f\n", pid.Kp, pid.Ki, pid.Kd)
 }

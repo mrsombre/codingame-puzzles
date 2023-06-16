@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graph demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+</head>
+<body>
+<div class="container">
+    <h1>Graph</h1>
+
+    <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+
+<script>
+    fetch('points.json')
+        .then(response => response.json())
+        .then(data => {
+            const speed = data.speed;
+            const power = data.power;
+            const ctx = document.getElementById('myChart');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: speed.map((_, index) => index.toString()),
+                    datasets: [{
+                        label: 'Speed',
+                        data: speed,
+                        borderWidth: 1,
+                        yAxisID: 'speed-axis'
+                    }, {
+                        label: 'Power',
+                        data: power,
+                        borderWidth: 1,
+                        yAxisID: 'power-axis'
+                    }]
+                },
+                options: {
+                    elements: {
+                        point: {
+                            radius: 1
+                        }
+                    },
+                    scales: {
+                        'speed-axis': {
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Speed'
+                            }
+                        },
+                        'power-axis': {
+                            position: 'right',
+                            min: 0,
+                            max: 4,
+                            title: {
+                                display: true,
+                                text: 'Power'
+                            },
+                            grid: {
+                                drawOnChartArea: false // Hide the grid lines for the custom y-axis
+                            }
+                        }
+                    },
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading JSON file:', error);
+        });
+</script>
+
+</body>
+</html>

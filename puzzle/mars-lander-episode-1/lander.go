@@ -7,7 +7,7 @@ import (
 const (
 	G = 3.711
 
-	MaxVSpeed = 40
+	MaxVSpeed = 40.0
 	TurnPower = 1
 
 	MaxPower = 4
