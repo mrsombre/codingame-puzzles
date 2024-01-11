@@ -227,11 +227,13 @@ func minmax(a, b ID) (ID, ID) {
 }
 
 func main() {
+	var err error
+
 	// N: the total number of nodes in the level, including the gateways
 	// L: the number of links
 	// E: the number of exit gateways
 	var N, L, E int
-	_, err := fmt.Scan(&N, &L, &E)
+	_, err = fmt.Scan(&N, &L, &E)
 	if err != nil {
 		panic(err)
 	}
@@ -241,7 +243,7 @@ func main() {
 	for i := 0; i < L; i++ {
 		// N1 and N2 defines a link between these nodes
 		var N1, N2 int
-		_, err := fmt.Scan(&N1, &N2)
+		_, err = fmt.Scan(&N1, &N2)
 		if err != nil {
 			panic(err)
 		}
@@ -251,7 +253,7 @@ func main() {
 	for i := 0; i < E; i++ {
 		// EI: the index of a gateway node
 		var EI int
-		_, err := fmt.Scan(&EI)
+		_, err = fmt.Scan(&EI)
 		if err != nil {
 			panic(err)
 		}
@@ -261,7 +263,7 @@ func main() {
 	for {
 		// SI: The index of the node on which the Bobnet agent is positioned this turn
 		var SI int
-		_, err := fmt.Scan(&SI)
+		_, err = fmt.Scan(&SI)
 		if err != nil {
 			panic(err)
 		}

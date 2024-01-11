@@ -1,12 +1,8 @@
 # Codingame Puzzles Solutions
 
-Just solutions for random games on the https://www.codingame.com
+This repository contains solutions for a variety of puzzles found on https://www.codingame.com.
 
-Feel free to follow me on [Codingame Profile](https://www.codingame.com/profile/9dd9f9f38412d78eaf21718bf6e87ca0626964).
+For common algorithms and data structures, refer to the [codingame-framework](https://github.com/mrsombre/codingame-framework) library.
 
-### Tests
-
-```shell
-cd <puzzle>
-go test -v ./...
-```
+---
+You are welcome to follow my [Codingame profile](https://www.codingame.com/profile/9dd9f9f38412d78eaf21718bf6e87ca0626964)
