@@ -1,47 +1,55 @@
 package main
 
 import (
-	"fmt"
+	"bufio"
+	"math/rand"
 	"os"
+	"runtime"
+	"sort"
+	"time"
 )
 
-const debug = true
+var rnd *rand.Rand
 
-func console(a ...any) {
-	if !debug {
-		return
-	}
-	fmt.Fprintln(os.Stderr, a...)
-}
-
-func exec(a ...any) {
-	fmt.Println(a...)
+func init() {
+	runtime.GOMAXPROCS(1)
+	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+	debug = true
 }
 
 func main() {
-	scanner := NewScanner(os.Stdin)
-	_ = ReadGame(scanner)
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Buffer(make([]byte, 1000000), 1000000)
 
-	lander := &Lander{}
-	pid := &PID{Kp: 4.0, Ki: 3.0, Kd: 3.0, IntegralMax: 10.0, IntegralMin: -10.0}
+	dataGame := ReadGame(scanner)
+	asText(DataExport(dataGame))
+	field := InputField(dataGame)
 
-	expSpeed := -MaxVSpeed + 1
+	dataStep := ReadStep(scanner)
+	asText(DataExport(dataStep))
+	lander := InputLander(dataStep)
+
+	game := Game{field, lander}
+	e := NewEvolution(game)
+	e.Evolve(100)
+
+	chromosomes := e.Population.Chromosomes
+	sort.Slice(chromosomes, func(i, j int) bool {
+		return chromosomes[i].Fitness > chromosomes[j].Fitness
+	})
+
+	best := chromosomes[0]
+	commands := best.Genes
+
+	ExecuteCommand(Commands{commands[0]})
+	commands = commands[1:]
 
 	for {
-		turnData := ReadTurn(scanner)
-		UpdateLander(turnData[0], lander)
+		dataStep = ReadStep(scanner)
+		asText(DataExport(dataStep))
+		lander = InputLander(dataStep)
 
-		control := pid.Control(expSpeed, lander.VSpeed)
-		if control <= 0 {
-			if lander.Power > 0 {
-				lander.Power = lander.Power - TurnPower
-			}
-		} else {
-			if lander.Power < MaxPower {
-				lander.Power = lander.Power + TurnPower
-			}
-		}
-
-		exec(0, lander.Power)
+		ExecuteCommand(Commands{commands[0]})
+		commands = commands[1:]
 	}
 }

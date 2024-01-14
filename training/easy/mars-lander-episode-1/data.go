@@ -1,61 +1,66 @@
 package main
 
+// Export/Import of data in the form of string arrays.
+// This can be used to unload the conditions of a problem (input)
+// in a compressed form into the debug console and unpack it in the IDE.
+
 import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
 )
 
+// DataExport serializes and compresses a slice of strings,
+// returning a base64 encoded string.
 func DataExport(data []string) string {
 	var err error
 
-	je, err := json.Marshal(data)
+	jsonData, err := json.Marshal(data)
 	if err != nil {
 		panic(err)
 	}
 
-	var buf bytes.Buffer
-	gz := gzip.NewWriter(&buf)
-	_, err = gz.Write(je)
-	if err != nil {
+	var gzBuf bytes.Buffer
+	gz := gzip.NewWriter(&gzBuf)
+	if _, err = gz.Write(jsonData); err != nil {
 		panic(err)
 	}
 	if err = gz.Close(); err != nil {
 		panic(err)
 	}
 
-	return base64.StdEncoding.EncodeToString(buf.Bytes())
+	return base64.StdEncoding.EncodeToString(gzBuf.Bytes())
 }
 
-func DataImport(v string) []string {
+// DataImport decodes a base64 string, decompresses it,
+// and deserializes the JSON data into a slice of strings.
+func DataImport(encodedData string) []string {
 	var err error
 
-	be, err := base64.StdEncoding.DecodeString(v)
+	gzData, err := base64.StdEncoding.DecodeString(encodedData)
 	if err != nil {
 		panic(err)
 	}
 
-	var buf bytes.Buffer
-	_, err = buf.Write(be)
+	gz, err := gzip.NewReader(bytes.NewBuffer(gzData))
 	if err != nil {
 		panic(err)
 	}
+	defer func(gz *gzip.Reader) {
+		err = gz.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(gz)
 
-	gz, err := gzip.NewReader(&buf)
-	if err != nil {
-		panic(err)
-	}
-
-	je, err := ioutil.ReadAll(gz)
-	if err != nil {
+	var jsonData bytes.Buffer
+	if _, err = jsonData.ReadFrom(gz); err != nil {
 		panic(err)
 	}
 
 	var data []string
-	err = json.Unmarshal(je, &data)
-	if err != nil {
+	if err = json.Unmarshal(jsonData.Bytes(), &data); err != nil {
 		panic(err)
 	}
 

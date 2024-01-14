@@ -2,39 +2,27 @@ package main
 
 import (
 	"bufio"
-	"fmt"
-	"io"
 )
 
-const scannerSize = 1000000
-
-func NewScanner(r io.Reader) *bufio.Scanner {
-	scanner := bufio.NewScanner(r)
-	scanner.Buffer(make([]byte, scannerSize), scannerSize)
-	return scanner
-}
-
 func ReadGame(s *bufio.Scanner) []string {
-	var result []string
+	data := make([]string, 0, 32)
 
 	s.Scan()
-	result = append(result, s.Text())
-	var points int
-	fmt.Sscan(s.Text(), &points)
-
-	for i := 0; i < points; i++ {
+	size := s.Text()
+	data = append(data, size)
+	for i := 0; i < StrToInt(size); i++ {
 		s.Scan()
-		result = append(result, s.Text())
+		data = append(data, s.Text())
 	}
 
-	return result
+	return data
 }
 
-func ReadTurn(s *bufio.Scanner) []string {
-	var result []string
+func ReadStep(s *bufio.Scanner) []string {
+	data := make([]string, 0, 1)
 
 	s.Scan()
-	result = append(result, s.Text())
+	data = append(data, s.Text())
 
-	return result
+	return data
 }
